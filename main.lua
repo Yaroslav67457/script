@@ -85,7 +85,7 @@ local Reset = MainTab:CreateButton({
 			if humanoid then
 				humanoid:ChangeState(Enum.HumanoidStateType.Dead)
 			end
-			character = localPlayer.CharacterAdded:Wait()
+			character = player.CharacterAdded:Wait()
 			task.defer(character.PivotTo, character, cframe)
 		end
 	end)
@@ -163,7 +163,9 @@ local WalkSpeed_Input = MainTab:CreateInput({
    Flag = "WalkSpeed_Input",
    Callback = function(Text)
     local character = player.Character
+	if not character then return end
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	if not humanoid then return end
 	if character then
 		humanoid.WalkSpeed = tonumber(Text)
 	end
@@ -177,7 +179,9 @@ local JumpPower_Input = MainTab:CreateInput({
    Flag = "JumpPower_Input",
    Callback = function(Text)
     local character = player.Character
+	if not character then return end
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	if not humanoid then return end
 	if character then
 		if humanoid.UseJumpPower then
 			humanoid.JumpPower = tonumber(Text)
@@ -187,7 +191,7 @@ local JumpPower_Input = MainTab:CreateInput({
 	end
    end,
 })
-local JumpPower_Input = MainTab:CreateInput({
+local FlightSpeed_Input = MainTab:CreateInput({
    Name = "Player FlightSpeed",
    CurrentValue = "",
    PlaceholderText = "50",
