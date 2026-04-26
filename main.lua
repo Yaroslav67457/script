@@ -247,6 +247,8 @@ local ScriptsDropdown = ScriptsTab:CreateDropdown({
     Options = scripts,
     CurrentOption = {},
     MultipleOptions = false
+    Callback = function(option)
+    end,
 })
 
 ScriptsTab:CreateButton({
