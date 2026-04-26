@@ -247,6 +247,7 @@ local ScriptsDropdown = ScriptsTab:CreateDropdown({
     Options = scripts,
     CurrentOption = {},
     MultipleOptions = false,
+    Flag = "YourScripts_Dropdown",
     Callback = function(option)
     end,
 })
