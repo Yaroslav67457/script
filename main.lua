@@ -187,10 +187,10 @@ MainTab:CreateToggle({
         end
    end
 })
-
+MainTab:CreateDivider()
 --// Inputs
 MainTab:CreateInput({
-   Name = "WalkSpeed",
+   Name = "Player WalkSpeed",
    PlaceholderText = "16",
    Callback = function(Text)
         local num = tonumber(Text)
@@ -206,7 +206,7 @@ MainTab:CreateInput({
 })
 
 MainTab:CreateInput({
-   Name = "JumpPower",
+   Name = "Player JumpPower/JumpHeight",
    PlaceholderText = "50",
    Callback = function(Text)
         local num = tonumber(Text)
@@ -226,7 +226,7 @@ MainTab:CreateInput({
 })
 
 MainTab:CreateInput({
-   Name = "FlightSpeed",
+   Name = "Player FlightSpeed",
    PlaceholderText = "50",
    Callback = function(Text)
         local num = tonumber(Text)
@@ -286,6 +286,6 @@ ScriptsTab:CreateButton({
         Rayfield:Notify({Title="Executed",Content=selected,Duration=2})
     end,
 })
-
-ScriptsTab:CreateLabel("Folder:")
-ScriptsTab:CreateLabel(folderPath)
+ScriptsTab:CreateDivider()
+ScriptsTab:CreateLabel("Folder with your scripts is :")
+ScriptsTab:CreateLabel(folderPath, "move-right")
