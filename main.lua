@@ -206,7 +206,7 @@ MainTab:CreateInput({
 })
 
 MainTab:CreateInput({
-   Name = "Player JumpPower/JumpHeight",
+   Name = "Player JumpPower",
    PlaceholderText = "50",
    Callback = function(Text)
         local num = tonumber(Text)
@@ -246,9 +246,9 @@ local ScriptsDropdown = ScriptsTab:CreateDropdown({
     Name = "Your Scripts",
     Options = scripts,
     CurrentOption = {},
-    MultipleOptions = false
+    MultipleOptions = false,
     Callback = function(option)
-    end,
+    end
 })
 
 ScriptsTab:CreateButton({
