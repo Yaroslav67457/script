@@ -85,7 +85,7 @@ local Reset = MainTab:CreateButton({
 			if humanoid then
 				humanoid:ChangeState(Enum.HumanoidStateType.Dead)
 			end
-			character = player.CharacterAdded:Wait()
+			character = localPlayer.CharacterAdded:Wait()
 			task.defer(character.PivotTo, character, cframe)
 		end
 	end)
@@ -148,11 +148,42 @@ local Flight = MainTab:CreateToggle({
    end
 })
 
---local Noclip = MainTab:CreateToggle({
---   Name = "Noclip",
---   Callback = function(Value)
---   end
---})
+local Noclip = MainTab:CreateToggle({
+   Name = "Noclip",
+   Callback = function(Value)
+       local character = player.Character
+		if not character then return end
+
+		if Value then
+			-- Если уже есть соединение, не создаём новое
+			if noclipConnection then return end
+			noclipConnection = RunService.Stepped:Connect(function()
+				local char = player.Character
+				if not char then return end
+				for _, part in ipairs(char:GetDescendants()) do
+					if part:IsA("BasePart") then
+						part.CanCollide = false
+					end
+				end
+			end)
+		else
+        -- Отключаем и удаляем соединение
+        if noclipConnection then
+            noclipConnection:Disconnect()
+            noclipConnection = nil
+        end
+        -- Восстанавливаем коллизию частям текущего персонажа
+        local char = player.Character
+        if char then
+            for _, part in ipairs(char:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = true
+                end
+            end
+        end
+    end
+   end
+})
 
 local Divider = MainTab:CreateDivider()
 local WalkSpeed_Input = MainTab:CreateInput({
@@ -163,9 +194,7 @@ local WalkSpeed_Input = MainTab:CreateInput({
    Flag = "WalkSpeed_Input",
    Callback = function(Text)
     local character = player.Character
-	if not character then return end
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-	if not humanoid then return end
 	if character then
 		humanoid.WalkSpeed = tonumber(Text)
 	end
@@ -179,9 +208,7 @@ local JumpPower_Input = MainTab:CreateInput({
    Flag = "JumpPower_Input",
    Callback = function(Text)
     local character = player.Character
-	if not character then return end
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-	if not humanoid then return end
 	if character then
 		if humanoid.UseJumpPower then
 			humanoid.JumpPower = tonumber(Text)
@@ -191,7 +218,7 @@ local JumpPower_Input = MainTab:CreateInput({
 	end
    end,
 })
-local FlightSpeed_Input = MainTab:CreateInput({
+local JumpPower_Input = MainTab:CreateInput({
    Name = "Player FlightSpeed",
    CurrentValue = "",
    PlaceholderText = "50",
@@ -254,5 +281,3 @@ local ExecuteScript_Button = ScriptsTab:CreateButton({
 local Divider = ScriptsTab:CreateDivider()
 local Label = ScriptsTab:CreateLabel("Folder with your scripts is :")
 local Label = ScriptsTab:CreateLabel("Xeno/workspace/q123573-menu/Your-Scripts", "move-right")
-
-Rayfield:LoadConfiguration()
