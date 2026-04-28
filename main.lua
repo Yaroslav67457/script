@@ -16,10 +16,11 @@ local noclipConnection = nil
 
 --// File System
 local folderPath = "q123573-menu/Your-Scripts"
-
 local function getScriptList()
     if not isfolder(folderPath) then
-        return {}
+        makefolder("q123573-menu")
+		makefolder("Your-Scripts")
+		return {}
     end
     
     local files = listfiles(folderPath)
@@ -191,6 +192,7 @@ MainTab:CreateDivider()
 --// Inputs
 MainTab:CreateInput({
    Name = "Player WalkSpeed",
+   RemoveTextAfterFocusLost = true,
    PlaceholderText = "16",
    Callback = function(Text)
         local num = tonumber(Text)
@@ -207,6 +209,7 @@ MainTab:CreateInput({
 
 MainTab:CreateInput({
    Name = "Player JumpPower",
+   RemoveTextAfterFocusLost = true,
    PlaceholderText = "50",
    Callback = function(Text)
         local num = tonumber(Text)
@@ -227,6 +230,7 @@ MainTab:CreateInput({
 
 MainTab:CreateInput({
    Name = "Player FlightSpeed",
+   RemoveTextAfterFocusLost = true,
    PlaceholderText = "50",
    Callback = function(Text)
         local num = tonumber(Text)
