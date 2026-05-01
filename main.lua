@@ -91,67 +91,47 @@ MainTab:CreateButton({
 
 --// Flight
 MainTab:CreateToggle({
-   Name = "Flight",
-   Callback = function(Value)
-     local character = player.Character
-     if not character then return end
-        
-     local humanoid = character:FindFirstChildOfClass("Humanoid")
-     local root = character:FindFirstChild("HumanoidRootPart")
-        
-     if not humanoid or not root then return end
-        
-     if Value then
-		 local oldGravity = game:GetService("Workspace").Gravity
-		 
-		 humanoid.AutoRotate = false
-         humanoid.PlatformStand = true
-            
-         flyConnection = RunService.Stepped:Connect(function()
-			 game:GetService("Workspace").Gravity = 0
-             local char = player.Character
-             if not char then return end
-                
-             local rootPart = char:FindFirstChild("HumanoidRootPart")
-             if not rootPart then return end
-                
-             local camera = workspace.CurrentCamera
-             local moveDirection = Vector3.zero
-                
-             if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDirection += camera.CFrame.LookVector end
-             if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDirection -= camera.CFrame.LookVector end
-             if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDirection += camera.CFrame.RightVector end
-             if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveDirection -= camera.CFrame.RightVector end
-             if UserInputService:IsKeyDown(Enum.KeyCode.E) then moveDirection += Vector3.new(0,1,0) end
-             if UserInputService:IsKeyDown(Enum.KeyCode.Q) then moveDirection -= Vector3.new(0,1,0) end
-                
-             if moveDirection.Magnitude > 0 then
-             	moveDirection = moveDirection.Unit
-             end
-                
-             rootPart.AssemblyLinearVelocity = moveDirection * FlightSpeed
-                
-             local targetCFrame = CFrame.lookAt(
-                 rootPart.Position,
-                 rootPart.Position + camera.CFrame.LookVector,
-                 camera.CFrame.UpVector
-             )
-                
-             local angularVelocity = (targetCFrame - targetCFrame.Position) * (rootPart.CFrame - rootPart.CFrame.Position):Inverse()
-             local axis, angle = angularVelocity:ToAxisAngle()
-             rootPart.AssemblyAngularVelocity = axis * angle * 5
-         end)
-     else
-		 game:GetService("Workspace").Gravity = oldGravity
-         humanoid.PlatformStand = false
-		 humanoid.AutoRotate = true
-            
-         if flyConnection then flyConnection:Disconnect() flyConnection = nil end
-            
-         root.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-         root.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-     end
-	end
+    Name = "Flight",
+    Callback = function(Value)
+        local character = player.Character
+        if not character then return end
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        local root = character:FindFirstChild("HumanoidRootPart")
+        if not humanoid or not root then return end
+
+        if Value then
+            humanoid.PlatformStand = true
+            humanoid.AutoRotate = false
+
+            flyConnection = RunService.Stepped:Connect(function()
+                local char = player.Character
+                if not char then return end
+                local rootPart = char:FindFirstChild("HumanoidRootPart")
+                if not rootPart then return end
+
+                local camera = workspace.CurrentCamera
+                local moveDir = Vector3.zero
+
+                if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDir += camera.CFrame.LookVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDir -= camera.CFrame.LookVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDir += camera.CFrame.RightVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveDir -= camera.CFrame.RightVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.E) then moveDir += Vector3.new(0, 1, 0) end
+                if UserInputService:IsKeyDown(Enum.KeyCode.Q) then moveDir -= Vector3.new(0, 1, 0) end
+
+                if moveDir.Magnitude > 0 then
+                    moveDir = moveDir.Unit
+                end
+
+                -- Передвигаем корневую часть вручную (игнорируем физику)
+                rootPart.CFrame = rootPart.CFrame + moveDir * FlightSpeed * RunService.Stepped:Wait()
+            end)
+        else
+            humanoid.PlatformStand = false
+            humanoid.AutoRotate = true
+            if flyConnection then flyConnection:Disconnect() flyConnection = nil end
+        end
+    end
 })
 
 --// Noclip
