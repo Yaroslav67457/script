@@ -22,10 +22,8 @@ local function getScriptList()
 		makefolder("Your-Scripts")
 		return {}
     end
-    
     local files = listfiles(folderPath)
     local result = {}
-    
     for _, file in ipairs(files) do
         if file:sub(-4) == ".lua" then
             local name = file:match("([^/\\]+)%.lua$")
@@ -34,7 +32,6 @@ local function getScriptList()
             end
         end
     end
-    
     return result
 end
 
@@ -61,14 +58,14 @@ MainTab:CreateButton({
    Callback = function()
         local character = player.Character
         if not character then return end
-        
+
         local cframe = character:GetPivot()
         local humanoid = character:FindFirstChildOfClass("Humanoid")
-        
+
         if humanoid then
             humanoid:ChangeState(Enum.HumanoidStateType.Dead)
         end
-        
+
         local newChar = player.CharacterAdded:Wait()
         task.defer(function()
             newChar:PivotTo(cframe)
@@ -82,7 +79,7 @@ MainTab:CreateButton({
    Callback = function()
         local character = player.Character
         local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-        
+
         if humanoid then
             humanoid:ChangeState(Enum.HumanoidStateType.Dead)
         end
@@ -91,86 +88,80 @@ MainTab:CreateButton({
 
 --// Flight
 MainTab:CreateToggle({
-    Name = "Flight",
-    Callback = function(Value)
+   Name = "Flight",
+   Callback = function(Value)
+        flying = Value
+
         local character = player.Character
         if not character then return end
-        
+
         local humanoid = character:FindFirstChildOfClass("Humanoid")
         local root = character:FindFirstChild("HumanoidRootPart")
+
         if not humanoid or not root then return end
-        
+
         if Value then
-            humanoid.AutoRotate = false
             humanoid.PlatformStand = true
-            
-            -- Удаляем старый коннект, если вдруг остался (безопасность)
-            if flyConnection then flyConnection:Disconnect() end
-            
-            flyConnection = RunService.Stepped:Connect(function()
+
+            flyBodyVelocity = Instance.new("BodyVelocity")
+            flyBodyVelocity.MaxForce = Vector3.new(1e6,1e6,1e6)
+            flyBodyVelocity.Parent = root
+
+            flyBodyGyro = Instance.new("BodyGyro")
+            flyBodyGyro.MaxTorque = Vector3.new(1e6,1e6,1e6)
+            flyBodyGyro.Parent = root
+
+            flyConnection = RunService.Heartbeat:Connect(function()
+                if not flying then return end
+
                 local char = player.Character
                 if not char then return end
+
                 local rootPart = char:FindFirstChild("HumanoidRootPart")
                 if not rootPart then return end
-                
+
                 local camera = workspace.CurrentCamera
-                local moveDirection = Vector3.zero
-                
-                if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDirection += camera.CFrame.LookVector end
-                if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDirection -= camera.CFrame.LookVector end
-                if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDirection += camera.CFrame.RightVector end
-                if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveDirection -= camera.CFrame.RightVector end
-                if UserInputService:IsKeyDown(Enum.KeyCode.E) then moveDirection += Vector3.new(0, 1, 0) end
-                if UserInputService:IsKeyDown(Enum.KeyCode.Q) then moveDirection -= Vector3.new(0, 1, 0) end
-                
-                if moveDirection.Magnitude > 0 then
-                    moveDirection = moveDirection.Unit
+                local move = Vector3.zero
+
+                if UserInputService:IsKeyDown(Enum.KeyCode.W) then move += camera.CFrame.LookVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.S) then move -= camera.CFrame.LookVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.D) then move += camera.CFrame.RightVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.A) then move -= camera.CFrame.RightVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.E) then move += Vector3.new(0,1,0) end
+                if UserInputService:IsKeyDown(Enum.KeyCode.Q) then move -= Vector3.new(0,1,0) end
+
+                if move.Magnitude > 0 then
+                    move = move.Unit
                 end
-                
-                local velocity = moveDirection * FlightSpeed
-                -- Обнуляем вертикальную скорость, чтобы гравитация не накапливалась
-                if not (UserInputService:IsKeyDown(Enum.KeyCode.E) or UserInputService:IsKeyDown(Enum.KeyCode.Q)) then
-                    velocity = Vector3.new(velocity.X, 0, velocity.Z)
-                end
-                rootPart.AssemblyLinearVelocity = velocity
-                
-                -- Поворот плавный через угловую скорость (можно оставить как есть)
-                local targetCFrame = CFrame.lookAt(
+
+                flyBodyVelocity.Velocity = move * FlightSpeed
+
+                flyBodyGyro.CFrame = CFrame.lookAt(
                     rootPart.Position,
-                    rootPart.Position + camera.CFrame.LookVector,
-                    camera.CFrame.UpVector
+                    rootPart.Position + camera.CFrame.LookVector
                 )
-                local angularVelocity = (targetCFrame - targetCFrame.Position) * (rootPart.CFrame - rootPart.CFrame.Position):Inverse()
-                local axis, angle = angularVelocity:ToAxisAngle()
-                rootPart.AssemblyAngularVelocity = axis * angle * 5
             end)
         else
             humanoid.PlatformStand = false
-            humanoid.AutoRotate = true
-            
-            if flyConnection then
-                flyConnection:Disconnect()
-                flyConnection = nil
-            end
-            
-            if root then
-                root.AssemblyLinearVelocity = Vector3.zero
-                root.AssemblyAngularVelocity = Vector3.zero
-            end
+
+            if flyConnection then flyConnection:Disconnect() flyConnection = nil end
+            if flyBodyVelocity then flyBodyVelocity:Destroy() flyBodyVelocity = nil end
+            if flyBodyGyro then flyBodyGyro:Destroy() flyBodyGyro = nil end
         end
-    end
+   end
 })
+
 --// Noclip
 MainTab:CreateToggle({
    Name = "Noclip",
    Callback = function(Value)
         if Value then
             if noclipConnection then return end
-            
+
             noclipConnection = RunService.Stepped:Connect(function()
                 local char = player.Character
                 if not char then return end
-                
+
                 for _, part in ipairs(char:GetDescendants()) do
                     if part:IsA("BasePart") then
                         part.CanCollide = false
@@ -182,7 +173,7 @@ MainTab:CreateToggle({
                 noclipConnection:Disconnect()
                 noclipConnection = nil
             end
-            
+
             local char = player.Character
             if char then
                 for _, part in ipairs(char:GetDescendants()) do
@@ -202,16 +193,7 @@ MainTab:CreateInput({
    PlaceholderText = "16",
    Callback = function(Text)
         local num = tonumber(Text)
-        if not num then return end
-        
-        local char = player.Character
-        local humanoid = char and char:FindFirstChildOfClass("Humanoid")
-        
-        if humanoid then
-            humanoid.WalkSpeed = num
-        end
-   end,
-})
+@@ -207,88 +209,90 @@
 
 MainTab:CreateInput({
    Name = "Player JumpPower",
@@ -220,10 +202,10 @@ MainTab:CreateInput({
    Callback = function(Text)
         local num = tonumber(Text)
         if not num then return end
-        
+
         local char = player.Character
         local humanoid = char and char:FindFirstChildOfClass("Humanoid")
-        
+
         if humanoid then
             if humanoid.UseJumpPower then
                 humanoid.JumpPower = num
@@ -266,35 +248,35 @@ ScriptsTab:CreateButton({
     Name = "Execute",
     Callback = function()
         local selected = ScriptsDropdown.CurrentOption
-        
+
         if type(selected) == "table" then
             selected = selected[1]
         end
-        
+
         if not selected then
             Rayfield:Notify({Title="Error",Content="No file selected",Duration=2})
             return
         end
-        
+
         local path = folderPath .. "/" .. selected .. ".lua"
-        
+
         if not isfile(path) then
             Rayfield:Notify({Title="Error",Content="File not found",Duration=2})
             return
         end
-        
+
         local ok, content = pcall(readfile, path)
         if not ok then
             Rayfield:Notify({Title="Error",Content="Read error",Duration=2})
             return
         end
-        
+
         local func, err = loadstring(content)
         if not func then
             Rayfield:Notify({Title="Error",Content=tostring(err),Duration=3})
             return
         end
-        
+
         pcall(func)
         Rayfield:Notify({Title="Executed",Content=selected,Duration=2})
     end,
