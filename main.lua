@@ -126,7 +126,10 @@ MainTab:CreateToggle({
              	moveDirection = moveDirection.Unit
              end
                 
-             rootPart.AssemblyLinearVelocity = moveDirection * FlightSpeed
+            -- Рассчитываем новую скорость
+			local newVelocity = moveDirection * FLY_SPEED
+			-- Оставляем горизонтальную (X, Z) скорость как есть, а вертикальную (Y) **принудительно обнуляем**
+			rootPart.AssemblyLinearVelocity = Vector3.new(newVelocity.X, 0, newVelocity.Z)
                 
              local targetCFrame = CFrame.lookAt(
                  rootPart.Position,
