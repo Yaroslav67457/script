@@ -102,6 +102,7 @@ MainTab:CreateToggle({
      if not humanoid or not root then return end
         
      if Value then
+		 humanoid.AutoRotate = false
          humanoid.PlatformStand = true
             
          flyConnection = RunService.Heartbeat:Connect(function()
@@ -139,6 +140,7 @@ MainTab:CreateToggle({
          end)
      else
          humanoid.PlatformStand = false
+		 humanoid.AutoRotate = true
             
          if flyConnection then flyConnection:Disconnect() flyConnection = nil end
             
