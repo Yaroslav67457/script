@@ -103,12 +103,12 @@ MainTab:CreateToggle({
         
      if Value then
 		 local oldGravity = game:GetService("Workspace").Gravity
-		 game:GetService("Workspace").Gravity = 0
 		 
 		 humanoid.AutoRotate = false
          humanoid.PlatformStand = true
             
          flyConnection = RunService.Stepped:Connect(function()
+			 game:GetService("Workspace").Gravity = 0
              local char = player.Character
              if not char then return end
                 
