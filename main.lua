@@ -102,6 +102,9 @@ MainTab:CreateToggle({
      if not humanoid or not root then return end
         
      if Value then
+		 local oldGravity = game:GetService("Workspace").Gravity
+		 game:GetService("Workspace").Gravity = 0
+		 
 		 humanoid.AutoRotate = false
          humanoid.PlatformStand = true
             
@@ -139,6 +142,7 @@ MainTab:CreateToggle({
              rootPart.AssemblyAngularVelocity = axis * angle * 5
          end)
      else
+		 game:GetService("Workspace").Gravity = oldGravity
          humanoid.PlatformStand = false
 		 humanoid.AutoRotate = true
             
