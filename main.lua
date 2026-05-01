@@ -105,7 +105,7 @@ MainTab:CreateToggle({
 		 humanoid.AutoRotate = false
          humanoid.PlatformStand = true
             
-         flyConnection = RunService.Heartbeat:Connect(function()
+         flyConnection = RunService.Stepped:Connect(function()
              local char = player.Character
              if not char then return end
                 
