@@ -39,8 +39,8 @@ end
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "q_123573's Script Panel",
-   LoadingTitle = "q_123573's Script Panel",
+   Name = "q_123573's Menu",
+   LoadingTitle = "q_123573's Menu",
    LoadingSubtitle = "based on Rayfield",
    ToggleUIKeybind = "K",
    ConfigurationSaving = {Enabled = false},
@@ -185,15 +185,23 @@ MainTab:CreateToggle({
         end
    end
 })
-MainTab:CreateDivider()
 --// Inputs
+MainTab:CreateDivider()
 MainTab:CreateInput({
    Name = "Player WalkSpeed",
    RemoveTextAfterFocusLost = true,
    PlaceholderText = "16",
    Callback = function(Text)
         local num = tonumber(Text)
-@@ -207,88 +209,90 @@
+		if not num then return end
+
+		local char = player.Character
+        local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			humanoid.WalkSpeed = num
+		end
+	end,
+})
 
 MainTab:CreateInput({
    Name = "Player JumpPower",
