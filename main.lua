@@ -3,8 +3,9 @@ local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 
---// Player
+--// Primary Variables
 local player = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
 
 --// Variables
 local FlightSpeed = 50
@@ -13,13 +14,14 @@ local flyConnection = nil
 local flyBodyVelocity = nil
 local flyBodyGyro = nil
 local noclipConnection = nil
+local espDrawing = {}
 
 --// File System
 local folderPath = "q123573-menu/Your-Scripts"
 local function getScriptList()
     if not isfolder(folderPath) then
         makefolder("q123573-menu")
-		makefolder("Your-Scripts")
+		makefolder("q123573-menu/Your-Scripts")
 		return {}
     end
     local files = listfiles(folderPath)
@@ -102,6 +104,7 @@ MainTab:CreateToggle({
 
         if Value then
             humanoid.PlatformStand = true
+			humanoid.AutoRotate = false
 
             flyBodyVelocity = Instance.new("BodyVelocity")
             flyBodyVelocity.MaxForce = Vector3.new(1e6,1e6,1e6)
@@ -123,6 +126,10 @@ MainTab:CreateToggle({
                 local camera = workspace.CurrentCamera
                 local move = Vector3.zero
 
+                if UserInputService:GetFocusedTextBox() then
+                    return
+                end
+
                 if UserInputService:IsKeyDown(Enum.KeyCode.W) then move += camera.CFrame.LookVector end
                 if UserInputService:IsKeyDown(Enum.KeyCode.S) then move -= camera.CFrame.LookVector end
                 if UserInputService:IsKeyDown(Enum.KeyCode.D) then move += camera.CFrame.RightVector end
@@ -136,13 +143,17 @@ MainTab:CreateToggle({
 
                 flyBodyVelocity.Velocity = move * FlightSpeed
 
-                flyBodyGyro.CFrame = CFrame.lookAt(
-                    rootPart.Position,
-                    rootPart.Position + camera.CFrame.LookVector
-                )
+                -- Orient the character to face the camera direction using BodyGyro
+                if flyBodyGyro then
+                    flyBodyGyro.CFrame = CFrame.lookAt(
+                        rootPart.Position,
+                        rootPart.Position + camera.CFrame.LookVector
+                    )
+                end
             end)
         else
             humanoid.PlatformStand = false
+			humanoid.AutoRotate = true
 
             if flyConnection then flyConnection:Disconnect() flyConnection = nil end
             if flyBodyVelocity then flyBodyVelocity:Destroy() flyBodyVelocity = nil end
@@ -235,6 +246,86 @@ MainTab:CreateInput({
         end
    end,
 })
+--// OTHER FUNCTIONS TAB
+local FunctionsTab = Window:CreateTab("Other Functions")
+FunctionsTab:CreateSection("Primary")
+
+FunctionsTab:CreateToggle({
+    Name = "Extra Sensory Perception (ESP)",
+    Callback = function(Value)
+        if Value then
+			if espConnection then return end
+				espConnection = RunService.Heartbeat:Connect(function()
+					for plr, draw in pairs(espDrawing) do
+						if not plr.Parent or not plr.Character then
+							draw.box:Remove()
+							draw.text:Remove()
+							espDrawing[plr] = nil
+						end
+					end
+					
+					for _, other in pairs(Players:GetPlayers()) do
+						if other == player then continue end
+						local char = other.Character
+						local root = char and char:FindFirstChild("HumanoidRootPart")
+						if root and char:FindFirstChild("Head") then
+							local head = char.Head
+							local pos, onScreen = Camera:WorldToViewportPoint(head.Position + Vector3.new(0, 0.5, 0))
+							local footPos = Camera:WorldToViewportPoint(root.Position - Vector3.new(0, 2, 0))
+							
+							if onScreen then
+								local height = footPos.Y - pos.Y
+								local width = height * 0.5
+								local left = pos.X - width/2
+								local top = pos.Y
+								
+								if not espDrawing[other] then
+									local box = Drawing.new("Square")
+									box.Thickness = 3
+									box.Color = Color3.new(1,0,0)
+									box.Filled = false
+									local text = Drawing.new("Text")
+									text.Text = other.Name
+									text.Size = 14
+									text.Color = Color3.new(1,1,1)
+									text.Center = true
+									text.Outline = true
+									espDrawing[other] = {box = box, text = text}
+								end
+								
+								local obj = espDrawing[other]
+								obj.box.Position = Vector2.new(left, top)
+								obj.box.Size = Vector2.new(width, height)
+								obj.box.Visible = true
+								obj.text.Position = Vector2.new(pos.X, top - 15)
+								obj.text.Visible = true
+							else
+								if espDrawing[other] then
+									espDrawing[other].box.Visible = false
+									espDrawing[other].text.Visible = false
+								end
+							end
+						elseif espDrawing[other] then
+							espDrawing[other].box:Remove()
+							espDrawing[other].text:Remove()
+							espDrawing[other] = nil
+						end
+					end
+				end)
+			else
+				if espConnection then
+					espConnection:Disconnect()
+					espConnection = nil
+				end
+				for _, draw in pairs(espDrawing) do
+					if draw and draw.box then draw.box:Remove() end
+					if draw and draw.text then draw.text:Remove() end
+				end
+				espDrawing = {}
+			end
+		end,
+})
+
 
 --// SCRIPTS TAB
 local ScriptsTab = Window:CreateTab("Scripts", "notepad-text")
